@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
 import { getSession } from "@/lib/session";
 import { getServerQueryClient, getServerTrpc } from "@/lib/trpc/server";
+import { EmailOtpSignIn } from "./email-otp-sign-in";
 import { GoogleSignIn } from "./google-sign-in";
 import { type SsoProvider, SsoSignIn } from "./sso-sign-in";
 
@@ -65,8 +66,12 @@ async function SignIn({
 	const insistOnGoogle = method === "google" && google;
 	const showSso = providers.length > 0 && !insistOnGoogle;
 	const showGoogle = google && (providers.length === 0 || insistOnGoogle);
+	// hb patch: email-OTP whenever the mailer is configured (RESEND_API_KEY in
+	// the shared root .env — the API process reads the same file to send).
+	const showEmailOtp =
+		Boolean(process.env.RESEND_API_KEY) || process.env.OTP_LOCAL_LOG === "true";
 
-	if (!showSso && !showGoogle) {
+	if (!showSso && !showGoogle && !showEmailOtp) {
 		return (
 			<>
 				<AuthHeading
@@ -92,6 +97,7 @@ async function SignIn({
 
 			{showSso ? <SsoSignIn providers={providers} /> : null}
 			{showGoogle ? <GoogleSignIn /> : null}
+			{showEmailOtp ? <EmailOtpSignIn /> : null}
 		</>
 	);
 }

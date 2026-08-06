@@ -3,10 +3,12 @@ import { db } from "@crm/db";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError } from "better-auth/api";
+import { emailOTP } from "better-auth/plugins/email-otp";
 import { organization } from "better-auth/plugins/organization";
 import { AUTH_COOKIE_PREFIX } from "./cookies";
 import { env } from "./env";
 import { ensureWorkspaceMembership } from "./organization";
+import { otpMailConfigured, sendOtpMail } from "./otp-mail";
 import { SYNC_SCOPES } from "./scopes";
 import { notifySignedIn } from "./signed-in";
 import {
@@ -98,6 +100,23 @@ export const auth = betterAuth({
 
 		sso({
 			organizationProvisioning: { disabled: true },
+		}),
+
+		// hb patch: email-OTP sign-in for installs without Google/SSO (we are a
+		// Lark shop). Codes only go to allow-listed addresses — the user-create
+		// hook below is the backstop, but refusing to mail outsiders at all
+		// mirrors the internal gtm-console behaviour.
+		emailOTP({
+			expiresIn: 600,
+			allowedAttempts: 5,
+			async sendVerificationOTP({ email, otp }) {
+				if (!hasSignInAllowList() || !isWorkspaceEmail(email)) {
+					throw new APIError("FORBIDDEN", {
+						message: "This CRM is private. That address is not on the allow-list.",
+					});
+				}
+				await sendOtpMail(email, otp);
+			},
 		}),
 	],
 
