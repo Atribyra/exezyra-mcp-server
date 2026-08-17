@@ -1,5 +1,9 @@
 import "@crm/env/load";
 
+import { installOpenRouterProvider } from "./lib/openrouter";
+
+installOpenRouterProvider();
+
 import { DEFAULT_AGENT_MODEL } from "@crm/db/settings";
 import { onTelemetryProblem, syncVersion } from "@crm/telemetry";
 import { defineAgent, defineDynamic } from "eve";

@@ -6,8 +6,8 @@
 	"license": "MIT",
 	"scripts": {
 		"backfill:images": "bun scripts/backfill-brand-images.ts",
-		"dev": "eve dev --no-ui",
-		"dev:tui": "eve dev",
+		"dev": "node node_modules/.bin/eve dev --no-ui",
+		"dev:tui": "node node_modules/.bin/eve dev",
 		"dispatch": "curl -fsS -X POST \"${AGENT_URL:-http://127.0.0.1:2000}/eve/v1/dev/schedules/dispatch\"",
 		"build": "eve build",
 		"start": "eve start",
@@ -17,6 +17,7 @@
 		"clean": "rm -rf .turbo .eve node_modules"
 	},
 	"dependencies": {
+		"@ai-sdk/openai-compatible": "^3.0.25",
 		"@crm/db": "workspace:*",
 		"@crm/env": "workspace:*",
 		"@crm/telemetry": "workspace:*",
